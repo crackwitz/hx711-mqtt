@@ -130,6 +130,9 @@ if __name__ == '__main__':
 
 			print("-> {!r}".format(rv))
 
+			if rv.err < weight.eps:
+				client.publish("weight/kg", "{:.3f}".format(rv.mean * 1e-3))
+
 	client = mqtt.Client()
 	client.on_connect = on_connect
 	client.on_message = on_message

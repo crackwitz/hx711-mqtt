@@ -105,33 +105,39 @@ if __name__ == '__main__':
 	gram_per_lsb = None
 	gram_per_lsb = 908.75 / 21228.700
 	gram_per_lsb = 2614 / 60004.600
+	gram_per_lsb = 361 / 8430
 
 	weight = Weight(gram_per_lsb)
 
 	def on_connect(client, userdata, rc):
-		client.subscribe(topic)
+		client.subscribe("weight")
+		client.subscribe("weight/gram_per_lsb")
 
 	def on_message(client, userdata, msg):
-		#topic = msg.topic
+		global gram_per_lsb
 
-		#is_text = all(32 <= c <= 127 for c in msg.payload)
+		topic = msg.topic
 		payload = msg.payload.decode('latin1')
-		adcval = int(payload)
-		print("")
-		print("zero:  {!r} (+{:.1f} g)".format(weight.zero, weight.zero.meanerr * gram_per_lsb))
-		print("value: {!r}".format(weight.value))
-		rv = weight.add(adcval)
 
-		if rv is not None:
-			print("-> {!r}".format(rv))
+		if topic == "weight/gram_per_lsb":
+			gram_per_lsb = eval(payload)
 
-			if gram_per_lsb:
+		if topic == "weight":
+			#is_text = all(32 <= c <= 127 for c in msg.payload)
+			adcval = int(payload)
+			rv = weight.add(adcval)
+
+			print("")
+			print("zero:  {!r} (+{:.1f} g)".format(weight.zero, weight.zero.meanerr * gram_per_lsb))
+			print("value: {!r}".format(weight.value))
+			print("delta: {!r}".format(weight.value() - weight.zero()))
+
+			if (rv is not None) and (gram_per_lsb is not None):
 				rv *= gram_per_lsb
+				print("-> {!r} grams".format(rv))
 
-			print("-> {!r}".format(rv))
-
-			if rv.err < weight.eps:
-				client.publish("weight/kg", "{:.3f}".format(rv.mean * 1e-3))
+				if rv.err < weight.eps:
+					client.publish("weight/grams", "{:.0f}".format(rv.mean))
 
 	client = mqtt.Client()
 	client.on_connect = on_connect

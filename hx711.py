@@ -103,9 +103,8 @@ if __name__ == '__main__':
 	#(topic, lsb_per_gram) = sys.argv[1:]
 	topic = "weight"
 	gram_per_lsb = None
-	gram_per_lsb = 908.75 / 21228.700
-	gram_per_lsb = 2614 / 60004.600
 	gram_per_lsb = 361 / 8430
+	gram_per_lsb = 908.75 / 21228.700
 
 	weight = Weight(gram_per_lsb)
 
